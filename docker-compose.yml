@@ -1,0 +1,58 @@
+# Proyek 1 / UTS Manajemen Basis Data
+# Semua nilai sensitif & identitas dibaca dari file .env (tidak ada hardcode).
+name: uts_mbd_${NAMA}
+
+services:
+  postgres:
+    image: postgres:${POSTGRES_VERSION}
+    container_name: postgres_${NAMA}
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+      # password 3 user aplikasi, hanya dipakai oleh initdb/00_init.sh
+      BACKEND_DEV_PASSWORD: ${BACKEND_DEV_PASSWORD}
+      BI_DEV_PASSWORD: ${BI_DEV_PASSWORD}
+      DATA_ENGINEER_PASSWORD: ${DATA_ENGINEER_PASSWORD}
+    ports:
+      # host:container -> 22XXX dari luar docker (DBeaver), 5432 di dalam
+      - "22${NIM3}:5432"
+    volumes:
+      - pg_data:/var/lib/postgresql/data
+      - ./initdb:/docker-entrypoint-initdb.d:ro
+      - ./sql:/sql:ro
+      - ./tests:/tests:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    networks:
+      - uts_net
+
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: pgadmin_${NAMA}
+    restart: unless-stopped
+    environment:
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL}
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD}
+    ports:
+      # 44XXX dari luar -> port 80 di dalam kontainer pgAdmin
+      - "44${NIM3}:80"
+    volumes:
+      - pgadmin_data:/var/lib/pgadmin
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - uts_net
+
+volumes:
+  pg_data:
+  pgadmin_data:
+
+networks:
+  uts_net:
+    name: uts_net_${NAMA}

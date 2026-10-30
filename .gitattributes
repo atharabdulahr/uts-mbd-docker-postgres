@@ -1,0 +1,4 @@
+# Paksa LF supaya script .sh tidak rusak di Docker kalau di-commit dari Windows
+*.sh  text eol=lf
+*.sql text eol=lf
+*.yml text eol=lf

@@ -1,0 +1,3 @@
+# Rahasia: jangan ikut ke GitHub. Gunakan .env.example sebagai template.
+.env
+*.log
